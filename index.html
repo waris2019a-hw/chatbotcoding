@@ -1,189 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wisely Programming Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wisely Programming Chatbot</title>
 
-        .chat-container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+  <!-- ✅ Marked.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-        .chat-header {
-            text-align: center;
-            color: #555;
-            margin-bottom: 20px;
-        }
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+  }
 
-        .chat-box {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 10px;
-            background: #f4f4f4;
-            height: 300px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #fff;
+  }
 
-        .chat-message {
-            padding: 10px;
-            border-radius: 8px;
-            max-width: 80%;
-        }
+  .chat-header {
+    text-align: center;
+    color: #555;
+    margin-bottom: 10px;
+  }
 
-        .user-message {
-            align-self: flex-end;
-            background: #007bff;
-            color: #fff;
-        }
+  .chat-box {
+    flex: 1; /* fills remaining height */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    background: #f4f4f4;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-        .ai-message {
-            align-self: flex-start;
-            background: #e6e6e6;
-            color: #333;
-        }
+  .chat-message {
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
 
-        .input-section {
-            display: flex;
-            gap: 10px;
-        }
+  .user-message {
+    align-self: flex-end;
+    background: #007bff;
+    color: #fff;
+  }
 
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+  .ai-message {
+    align-self: flex-start;
+    background: #e6e6e6;
+    color: #333;
+  }
 
-        button {
-            padding: 10px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+  .input-section {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
 
-        button:hover {
-            background: #0056b3;
-        }
+  input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
 
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
+  button {
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+  }
 
-        .loading img {
-            width: 50px;
-            height: 50px;
-        }
-    </style>
-    <script>
-        async function callAPI(initial = false) {
-            const apiKey = "AIzaSyCEo7ILnowFmTGglVOOcjB0QJvYjWuM71A";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
-         //   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  button:hover {
+    background: #0056b3;
+  }
 
-            const chatBox = document.getElementById('chatBox');
-            const input = document.getElementById('promptInput');
-            const loading = document.getElementById('loading');
-            const userMessage = input.value.trim();
+  .loading {
+    display: none;
+    text-align: center;
+    margin: 5px 0;
+    font-size: 12px;
+    color: #777;
+  }
 
-            const prompt = initial ? "You are AI mentor ,answer about programming Language only,such as javascript python C++,answer shortly Thai message,Thai boy, Your name is Wiselybot\n introduce yourself" : "Answer in thai Language\n" + userMessage;
+  .loading img {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+  }
 
- /*const prompt = initial ? "You are Digital Coding Specialist include python ,Answer in thai,Thai boy, Your name is Wesley\n introduce yourself" : "Answer in thai Language\n" + userMessage;
-*/
-            if (!initial && !userMessage) return;
+  /* ✅ Code styling */
+  pre code {
+    background-color: #333;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 5px;
+    display: block;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-family: monospace;
+  }
+</style>
 
-            if (!initial) {
-                const userBubble = document.createElement('div');
-                userBubble.className = 'chat-message user-message';
-                userBubble.textContent = userMessage;
-                chatBox.appendChild(userBubble);
-                chatBox.scrollTop = chatBox.scrollHeight;
-                input.value = '';
-            }
-
-            const requestData = {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }]
-            };
-
-            try {
-                loading.style.display = 'block';
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const contentText = data.candidates[0]?.content?.parts[0]?.text || "No content found";
-
-                const aiBubble = document.createElement('div');
-                aiBubble.className = 'chat-message ai-message';
-                aiBubble.textContent = contentText;
-                chatBox.appendChild(aiBubble);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (error) {
-                const errorBubble = document.createElement('div');
-                errorBubble.className = 'chat-message ai-message';
-                errorBubble.textContent = `Error: ${error.message}`;
-                chatBox.appendChild(errorBubble);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
-
-        window.onload = () => {
-            callAPI(true);
-        };
-    </script>
 </head>
 <body>
-    <div class="chat-container">
-        <h1 class="chat-header">Wiselybot 
-            <br>Chatbot Mentor Programming </h1>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="input-section">
-            <input type="text" id="promptInput" placeholder="Type your message here...">
-            <button onclick="callAPI()">Send</button>
-        </div>
-     <!--   <div><center><br><a href="deep.html"><button>Deep Think version(Experiment)</button></a></center></div>
-        -->
-        <div class="loading" id="loading">
-            <img src="https://i.gifer.com/YCZH.gif" alt="Loading...">
-            <p>Loading...</p>
-        </div>
+  <div class="chat-container">
+    <h1 class="chat-header">Wiselybot <br>Chatbot Mentor Programming</h1>
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="input-section">
+      <input type="text" id="promptInput" placeholder="Type your message here..." />
+      <button onclick="callAPI()">Send</button>
     </div>
+
+    <div class="loading" id="loading">
+      <img src="https://i.gifer.com/YCZH.gif" alt="Loading..." />
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    async function callAPI(initial = false) {
+      const apiKey = "AIzaSyCEo7ILnowFmTGglVOOcjB0QJvYjWuM71A"; // 🔒 Replace with your real API Key
+   //   const url = `https://generativelanguage.googleapis.com/v1beta/models/tunedModels/programmingqnathaiall-bewxe5ew0s4m:generateContent?key=${apiKey}`;
+
+     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+      const chatBox = document.getElementById("chatBox");
+      const input = document.getElementById("promptInput");
+      const loading = document.getElementById("loading");
+      const userMessage = input.value.trim();
+
+      const prompt = initial
+        ? "You are AI mentor ,answer about programming Language only,such as javascript python C++,answer shortly Thai message,Thai boy, Your name is Wiselybot\n introduce yourself"
+        : "expain in thai Language and short answer\n" + userMessage;
+
+      if (!initial && !userMessage) return;
+
+      if (!initial) {
+        const userBubble = document.createElement("div");
+        userBubble.className = "chat-message user-message";
+        userBubble.textContent = userMessage;
+        chatBox.appendChild(userBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        input.value = "";
+      }
+
+      const requestData = {
+        contents: [{ parts: [{ text: prompt }] }],
+      };
+
+      try {
+        loading.style.display = "block";
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const contentText = data.candidates[0]?.content?.parts[0]?.text || "No content found";
+
+        const aiBubble = document.createElement("div");
+        aiBubble.className = "chat-message ai-message";
+        aiBubble.innerHTML = marked.parse(contentText); // ✅ Convert markdown to HTML
+        chatBox.appendChild(aiBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (error) {
+        const errorBubble = document.createElement("div");
+        errorBubble.className = "chat-message ai-message";
+        errorBubble.textContent = `Error: ${error.message}`;
+        chatBox.appendChild(errorBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+    window.onload = () => {
+      callAPI(true);
+    };
+  </script>
 </body>
 </html>
