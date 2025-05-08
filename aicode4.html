@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wisely Programming Chatbot</title>
+
+  <!-- ✅ Marked.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+    background: #fff;
+  }
+
+  .chat-header {
+    text-align: center;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .chat-box {
+    flex: 1; /* fills remaining height */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    background: #f4f4f4;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chat-message {
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .user-message {
+    align-self: flex-end;
+    background: #007bff;
+    color: #fff;
+  }
+
+  .ai-message {
+    align-self: flex-start;
+    background: #e6e6e6;
+    color: #333;
+  }
+
+  .input-section {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  button {
+    padding: 10px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  .loading {
+    display: none;
+    text-align: center;
+    margin: 5px 0;
+    font-size: 12px;
+    color: #777;
+  }
+
+  .loading img {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+  }
+
+  /* ✅ Code styling */
+  pre code {
+    background-color: #333;
+    color: #f8f8f2;
+    padding: 10px;
+    border-radius: 5px;
+    display: block;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-family: monospace;
+  }
+</style>
+
+</head>
+<body>
+  <div class="chat-container">
+    <h2 class="chat-header">Wiselybot Chatbot Mentor Programming</h2>
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="input-section">
+      <input type="text" id="promptInput" placeholder="Type your message here..." />
+      <button onclick="callAPI()">Send</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <img src="https://i.gifer.com/YCZH.gif" alt="Loading..." />
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    async function callAPI(initial = false) {
+      const apiKey = "AIzaSyCEo7ILnowFmTGglVOOcjB0QJvYjWuM71A"; // 🔒 Replace with your real API Key
+    //  const url = `https://generativelanguage.googleapis.com/v1beta/models/tunedModels/programmingqnathaiall-bewxe5ew0s4m:generateContent?key=${apiKey}`;
+
+     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  //const url = `https://generativelanguage.googleapis.com/v1beta/models/generate-num-1757:generateContent?key=${apiKey}`;
+     //tunedModels/generate-num-1757
+
+      const chatBox = document.getElementById("chatBox");
+      const input = document.getElementById("promptInput");
+      const loading = document.getElementById("loading");
+      const userMessage = input.value.trim();
+
+      const prompt = initial
+        ? "You are AI mentor ,answer about programming Language only,such as javascript,answer shortly Thai message,Thai boy, Your name is Wiselybot\n introduce yourself"
+        : "expain in thai Language and short answer\n" + userMessage;
+
+      if (!initial && !userMessage) return;
+
+      if (!initial) {
+        const userBubble = document.createElement("div");
+        userBubble.className = "chat-message user-message";
+        userBubble.textContent = userMessage;
+        chatBox.appendChild(userBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        input.value = "";
+      }
+
+      const requestData = {
+        contents: [{ parts: [{ text: prompt }] }],
+      };
+
+      try {
+        loading.style.display = "block";
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const contentText = data.candidates[0]?.content?.parts[0]?.text || "No content found";
+
+        const aiBubble = document.createElement("div");
+        aiBubble.className = "chat-message ai-message";
+        aiBubble.innerHTML = marked.parse(contentText); // ✅ Convert markdown to HTML
+        chatBox.appendChild(aiBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (error) {
+        const errorBubble = document.createElement("div");
+        errorBubble.className = "chat-message ai-message";
+        errorBubble.textContent = `Error: ${error.message}`;
+        chatBox.appendChild(errorBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+    window.onload = () => {
+      callAPI(true);
+    };
+    document.getElementById("promptInput").addEventListener("keypress", function (event) {
+  if (event.key === "Enter") {
+    event.preventDefault(); // ป้องกันการขึ้นบรรทัดใหม่
+    callAPI();
+  }
+});
+
+  </script>
+
+<script>
+  let jsonContext = ""; // global context ที่โหลดจาก JSON
+
+  async function loadJsonContext() {
+    try {
+      const response = await fetch("data.json");
+      const jsonData = await response.json();
+      jsonContext = JSON.stringify(jsonData, null, 2).substring(0, 8000); // ตัดถ้ายาวเกิน
+    } catch (error) {
+      console.error("โหลด JSON ไม่สำเร็จ:", error);
+      jsonContext = "ไม่มีข้อมูลจาก JSON เนื่องจากเกิดข้อผิดพลาด";
+    }
+  }
+
+  async function callAPI(initial = false) {
+    const input = document.getElementById("promptInput");
+    const chatBox = document.getElementById("chatBox");
+    const loading = document.getElementById("loading");
+    const userMessage = input.value.trim();
+
+    const prompt = initial
+      ? `แนะนำตัวเองชื่อ Wiselybot เป็น AI ที่ตอบเฉพาะเรื่อง programming โดยใช้ข้อมูลฐานความรู้:\n${jsonContext}`
+      : `ฐานความรู้: \n${jsonContext}\n\nคำถาม: ${userMessage}\n\nตอบสั้น กระชับ เป็นภาษาไทย`;
+
+    if (!initial && !userMessage) return;
+
+    if (!initial) {
+      const userBubble = document.createElement("div");
+      userBubble.className = "chat-message user-message";
+      userBubble.textContent = userMessage;
+      chatBox.appendChild(userBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = "";
+    }
+
+    const requestData = {
+      contents: [{ parts: [{ text: prompt }] }],
+    };
+
+    try {
+      loading.style.display = "block";
+
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCEo7ILnowFmTGglVOOcjB0QJvYjWuM71A",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestData),
+        }
+      );
+
+      const data = await response.json();
+      const contentText = data.candidates[0]?.content?.parts[0]?.text || "ไม่พบคำตอบ";
+
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "chat-message ai-message";
+      aiBubble.innerHTML = marked.parse(contentText);
+      chatBox.appendChild(aiBubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+      const errorBubble = document.createElement("div");
+      errorBubble.className = "chat-message ai-message";
+      errorBubble.textContent = `Error: ${error.message}`;
+      chatBox.appendChild(errorBubble);
+    } finally {
+      loading.style.display = "none";
+    }
+  }
+
+  // เมื่อโหลดเว็บ
+  window.onload = async () => {
+    await loadJsonContext(); // โหลด JSON ก่อน
+    callAPI(true);           // เรียกฟังก์ชัน AI หลังโหลด context
+  };
+
+  document.getElementById("promptInput").addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      callAPI();
+    }
+  });
+  console.log("Full API response:", data);
+
+</script>
+
+</body>
+</html>
