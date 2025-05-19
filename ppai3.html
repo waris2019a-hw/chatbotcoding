@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Playground</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    #question {
+      padding: 15px;
+      background-color: #0288d1;
+      color: white;
+      font-size: 18px;
+      text-align: center;
+    }
+    #container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #editor {
+      flex: 1;
+      padding: 15px;
+      background: #f0f0f0;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+      font-family: monospace;
+    }
+    #editor[contenteditable="true"] {
+      outline: none;
+      white-space: pre-wrap;
+    }
+    #output {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      background: #ffffff;
+    }
+    #output-display {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      border-bottom: 1px solid #eee;
+    }
+    #feedback {
+      text-align: center;
+      font-weight: bold;
+      color: green;
+      padding: 10px;
+      display: none;
+    }
+    #chatbot-container {
+      border-top: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      height: 300px;
+    }
+    #chatbot-topbar {
+      text-align: center;
+      padding: 10px;
+      background: #eeeeee;
+      border-bottom: 1px solid #ccc;
+    }
+    #chatbot-topbar button {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #chatbot-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    #chatbot-messages code {
+      display: block;
+      background: #eee;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    #chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+    }
+    #chatbot-input button {
+      padding: 10px 15px;
+      background-color: #0288d1;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #nextLevelBtn {
+      display: none;
+      background-color: green;
+      color: white;
+      margin: 10px auto;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.min.js"></script>
+</head>
+<body>
+  <div id="question">📝 ด่านที่ 1: เขียนโปรแกรมแสดงข้อความว่า HelloWorld! โดยใช้คำสั่ง print</div>
+  <div style="text-align: center;">
+    <button onclick="runCode()">▶️ Run</button>
+  </div>
+  <div id="container">
+    <div id="editor" contenteditable="true">print("HelloWorld!")</div>
+    <div id="output">
+      <div id="output-display"></div>
+      <div id="feedback">✅ คำตอบถูกต้อง!</div>
+      <button id="nextLevelBtn" onclick="nextLevel()">Next Level</button>
+      <div id="chatbot-container">
+        <div id="chatbot-topbar">
+          <button onclick="copyCodeToChat()">💬 ถามแชทบอทด้วยโค้ดนี้</button>
+        </div>
+        <div id="chatbot-messages">
+          <div><strong>AI:</strong> <code>สวัสดีครับ! ผมคือผู้ช่วย AI สำหรับอธิบายโค้ด Python และตอบคำถามเกี่ยวกับโปรแกรมนี้ คุณสามารถพิมพ์คำถามหรือส่งโค้ดมาให้ผมช่วยวิเคราะห์ได้เลยครับ</code></div>
+        </div>
+        <div id="chatbot-input">
+          <input type="text" id="chatbotText" placeholder="พิมพ์ข้อความ..." onkeydown="if(event.key==='Enter') sendChatbotMessage()">
+          <button onclick="sendChatbotMessage()">ส่ง</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let currentLevel = 1;
+
+function runCode() {
+  const code = document.getElementById("editor").innerText;
+  const output = document.getElementById("output-display");
+  const nextBtn = document.getElementById("nextLevelBtn");
+  const feedback = document.getElementById("feedback");
+  output.innerText = "";
+  feedback.style.display = "none";
+  nextBtn.style.display = "none";
+
+  Sk.configure({
+    output: (text) => output.innerText += text,
+    read: (x) => {
+      if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined) {
+        throw `File not found: '${x}'`;
+      }
+      return Sk.builtinFiles["files"][x];
+    }
+  });
+
+  Sk.misceval.asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code))
+    .then(() => {
+      const answer = output.innerText.trim();
+      if (
+        (currentLevel === 1 && answer === "HelloWorld!") ||
+        (currentLevel === 2 && answer.includes("John") && answer.includes("25")) ||
+        (currentLevel === 3 && answer.includes("30")) ||
+        (currentLevel === 4 && answer.includes("ผ่าน") && !answer.includes("ไม่ผ่าน")) ||
+        (currentLevel === 5 && answer.includes("0") && answer.includes("1") && answer.includes("2") && answer.includes("3") && answer.includes("4"))
+      ) {
+        feedback.style.display = "block";
+        nextBtn.style.display = "block";
+      }
+    })
+    .catch((err) => output.innerText += "\n" + err.toString());
+}
+
+function nextLevel() {
+  const question = document.getElementById("question");
+  const editor = document.getElementById("editor");
+  const feedback = document.getElementById("feedback");
+  const nextBtn = document.getElementById("nextLevelBtn");
+  const output = document.getElementById("output-display");
+
+  currentLevel++;
+
+  if (currentLevel === 2) {
+    question.innerText = "📝 ด่านที่ 2: ประกาศตัวแปรชื่อ name และ age แล้วพิมพ์ค่าทั้งสองออกมา เช่น 'John' และ 25";
+    editor.innerText = "name = \"John\"\nage = xx\nprint(name)\nprint(age)";
+  } else if (currentLevel === 3) {
+    question.innerText = "📝 ด่านที่ 3: เขียนโปรแกรมคำนวณผลรวมของ 10 กับ 20 แล้วพิมพ์ผลลัพธ์";
+    editor.innerText = "result = 10 x 20\nprint(result)";
+  } else if (currentLevel === 4) {
+    question.innerText = "📝 ด่านที่ 4: เขียนโปรแกรมตรวจสอบคะแนน ถ้าคะแนนมากกว่าหรือเท่ากับ 50 ให้พิมพ์ว่า 'ผ่าน'";
+    editor.innerText = "score = 60\nif score >= 50:\n    print(\"xxx\")";
+  } else if (currentLevel === 5) {
+    question.innerText = "📝 ด่านที่ 5: เขียนโปรแกรมแสดงเลข 0 ถึง 4 โดยใช้ลูป for";
+    editor.innerText = "for i in range(5):\n    print(a)";
+  }
+
+  feedback.style.display = "none";
+  nextBtn.style.display = "none";
+  output.innerText = "";
+}
+
+async function sendChatbotMessage() {
+  const textInput = document.getElementById("chatbotText");
+  const message = textInput.value.trim();
+  const messageBox = document.getElementById("chatbot-messages");
+  if (message === '') return;
+  messageBox.innerHTML += `<div><strong>คุณ:</strong> ${message}</div>`;
+
+  const apiKey = "AIzaSyCEo7ILnowFmTGglVOOcjB0QJvYjWuM71A";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [
+          { role: "user", parts: [{ text: message }] }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 512
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`เกิดข้อผิดพลาด: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "(ไม่สามารถรับคำตอบจาก AI ได้)";
+    const formattedReply = `<code>${reply.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`;
+    messageBox.innerHTML += `<div><strong>AI:</strong> ${formattedReply}</div>`;
+  } catch (error) {
+    messageBox.innerHTML += `<div><strong>AI:</strong> เกิดข้อผิดพลาด: ${error.message}</div>`;
+  }
+
+  textInput.value = "";
+  messageBox.scrollTop = messageBox.scrollHeight;
+}
+
+function copyCodeToChat() {
+  const code = document.getElementById("editor").innerText;
+  const qt = document.getElementById("question").innerText;
+  const textInput = document.getElementById("chatbotText");
+  textInput.value = `${qt}\n\n โค้ดนี้ผิดอย่างไร \n\n${code}`;
+  textInput.focus();
+}
+</script>
+</body>
+</html>
