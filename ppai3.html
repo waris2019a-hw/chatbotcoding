@@ -125,7 +125,7 @@
     <button onclick="runCode()">▶️ Run</button>
   </div>
   <div id="container">
-    <div id="editor" contenteditable="true">print("HelloWorld!")</div>
+    <div id="editor" contenteditable="true">print("Hello World")</div>
     <div id="output">
       <div id="output-display"></div>
       <div id="feedback">✅ คำตอบถูกต้อง!</div>
@@ -261,6 +261,8 @@ function copyCodeToChat() {
   const textInput = document.getElementById("chatbotText");
   textInput.value = `${qt}\n\n โค้ดนี้ผิดอย่างไร \n\n${code}`;
   textInput.focus();
+  sendChatbotMessage();
+
 }
 </script>
 </body>
